@@ -4,10 +4,10 @@
  */
 package GUI;
 
-import static GUI.Index.Trash.readFileToString;
-import static GUI.Index.Trash.splitString;
+
 import java.util.Arrays;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,11 +19,10 @@ import javax.swing.JOptionPane;
  */
 public class Index extends javax.swing.JFrame {
 
-    
-public class Trash {
-    
+     static ArrayList<String> instr_str = new ArrayList<String>();
+  
     // function that reads what is in the file 
-    public static String readFileToString(String filePath) {
+    public String readFileToString(String filePath) {
         StringBuilder stringBuilder = new StringBuilder();
         
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
@@ -33,7 +32,7 @@ public class Trash {
                 stringBuilder.append("\n"); // Append a newline character after each line
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Could Not Open File " + "\n" + "Error: " + e.getMessage() +"\n"+ "ake Sure You Entered The Correct File Path", "File Error",  JOptionPane.ERROR_MESSAGE);
         }
         
         return stringBuilder.toString();
@@ -48,7 +47,7 @@ public class Trash {
 
         return resultList;
     }
-}
+
     /**
      * Creates new form Index
      */
@@ -88,8 +87,10 @@ public class Trash {
         jSeparator2 = new javax.swing.JSeparator();
         jLabel15 = new javax.swing.JLabel();
         jLabel16 = new javax.swing.JLabel();
-        filepath = new javax.swing.JTextField();
+        DataPath = new javax.swing.JTextField();
         jSeparator3 = new javax.swing.JSeparator();
+        InstPath = new javax.swing.JTextField();
+        jLabel17 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("MHS HomePage");
@@ -175,7 +176,7 @@ public class Trash {
                 .addComponent(jLabel4)
                 .addGap(88, 88, 88)
                 .addComponent(jLabel6)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 85, Short.MAX_VALUE)
                 .addComponent(Load)
                 .addContainerGap())
         );
@@ -210,7 +211,10 @@ public class Trash {
         jLabel15.setText("Cache Information:");
 
         jLabel16.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel16.setText("Copy Path of Text File Here: ");
+        jLabel16.setText("Copy Path of Data  File Here: ");
+
+        jLabel17.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel17.setText("Copy Path of Instructions File Here: ");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -223,13 +227,12 @@ public class Trash {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(filepath, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jSeparator3)
+                    .addComponent(InstPath, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel16)
                             .addComponent(jLabel15)
-                            .addComponent(jLabel8)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel9)
                                 .addGap(47, 47, 47)
@@ -252,8 +255,11 @@ public class Trash {
                                         .addComponent(jLabel12))))
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(110, 110, 110)
-                                .addComponent(jButton1)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                                .addComponent(jButton1))
+                            .addComponent(jLabel17)
+                            .addComponent(jLabel8))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(DataPath))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -282,9 +288,13 @@ public class Trash {
                 .addComponent(jLabel8)
                 .addGap(28, 28, 28)
                 .addComponent(jLabel16)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(DataPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(filepath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
+                .addComponent(jLabel17)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(InstPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jButton1)
@@ -299,7 +309,7 @@ public class Trash {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
         // Getting User Input
-//        try{
+        try{
         int cache_size = Integer.parseInt(CacheSize.getText());
         int cache_line_size = Integer.parseInt(CacheLineSize.getText());
         int no_cashe_cycles = Integer.parseInt(Cyc.getText());
@@ -309,33 +319,42 @@ public class Trash {
   
       }
       else{
-        // Insert Local File Path Here
-        String file_path = filepath.getText();
+        // Insert Local File Path Here Data File
+        String file_path = DataPath.getText();
         String file_data = readFileToString(file_path);
-        System.out.println("file data:" + file_data + "\n");
-        
+        //System.out.println("file data:" + file_data + "\n");
         // converting the file to ArrayList of strings
         ArrayList<String> access_seq_str = new ArrayList<String>(); 
         access_seq_str = splitString(file_data);
-        System.out.println("access sequence:" + access_seq_str );
-
+      //  System.out.println("access sequence:" + access_seq_str );
+// Instruction File
+        String intfile_path = InstPath.getText();
+        String intfile_data = readFileToString(intfile_path);
+        System.out.println("Instruction Data:" + intfile_data + "\n");
+        // converting the file to ArrayList of strings
         
+        instr_str = splitString(intfile_data);
+        System.out.println("Data_Str:" + instr_str + "\n");
         // Open Simulator 
+        
         Simulator s = new Simulator(cache_size,cache_line_size,no_cashe_cycles,access_seq_str);
+        Simulator.instances_Counter++;
         s.setVisible(true);
         
         this.dispose();
         }
-        //}
-//        catch (NumberFormatException e){
-//        
-//         JOptionPane.showMessageDialog(this, "Please Enter a Valid Input " + "\n" + "Error: " + e.getMessage() +"\n"+ "Cause: "+ e.getLocalizedMessage(), "Incorrect Format",  JOptionPane.ERROR_MESSAGE);
-//        }
+        }
+        catch (NumberFormatException e){
+        
+         JOptionPane.showMessageDialog(this, "Please Enter a Valid Input. " + "\n" + "Error: " + e.getMessage() +"\n"+ "Cause: "+ e.getLocalizedMessage(), "Incorrect Format",  JOptionPane.ERROR_MESSAGE);
+        }
+       
+        
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void LoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LoadActionPerformed
         // TODO add your handling code here:
-        CacheSize.setText("16"); CacheLineSize.setText("1"); Cyc.setText("10"); filepath.setText("C:\\Users\\Hassan\\Desktop\\MHS.txt");
+        CacheSize.setText("16"); CacheLineSize.setText("1"); Cyc.setText("10"); DataPath.setText("C:\\Users\\Hassan\\Desktop\\MHS.txt"); InstPath.setText("C:\\Users\\Hassan\\Desktop\\Instructions.txt");
     }//GEN-LAST:event_LoadActionPerformed
 
     /**
@@ -377,8 +396,9 @@ public class Trash {
     private javax.swing.JTextField CacheLineSize;
     private javax.swing.JTextField CacheSize;
     private javax.swing.JTextField Cyc;
+    private javax.swing.JTextField DataPath;
+    private javax.swing.JTextField InstPath;
     private javax.swing.JButton Load;
-    private javax.swing.JTextField filepath;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -388,6 +408,7 @@ public class Trash {
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
