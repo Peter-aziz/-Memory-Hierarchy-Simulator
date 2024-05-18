@@ -14,7 +14,7 @@ import javax.swing.table.DefaultTableModel;
  */
 public class Simulator extends javax.swing.JFrame {
 DefaultTableModel model;
-
+public static int instances_Counter = 0;
 public void PopulateTableini(){
 
 for (int i=0; i < index.size(); i++){
@@ -37,16 +37,18 @@ model.addRow(new Object[]{index.get(counter), valid_bit.get(counter),tag.get(cou
     ArrayList<String> access_seq_bin;
     ArrayList<String> tag = new ArrayList<>(no_of_lines);
     ArrayList<Character> valid_bit;
-    
     // Restart Varibels 
     int CacheSize_rst, CacheLineSize_rst, Cycles_rst;
     ArrayList<String> access_seq_str_rst;
+   
     //Constructer for GUI
     public Simulator(int cachesize, int cachelinesize, int Cyc, ArrayList<String> sequence) {
         initComponents();
-        
+        System.out.println("Sequence inside sim:" + sequence + "\n");
+  
         model = (DefaultTableModel)table.getModel();
         model.setRowCount(0);
+       
         CacheSize = cachesize;
         CacheSize_rst = cachesize;
         CacheLineSize = cachelinesize;
@@ -63,6 +65,7 @@ model.addRow(new Object[]{index.get(counter), valid_bit.get(counter),tag.get(cou
         //Tracked parameters 
          hit_count = 0;
          miss_count = 0;
+         instrbttn.setVisible(false);
    //     System.out.println("index_size:" + index_size + "\n");
    //     System.out.println("tag_size:" + tag_size + "\n");
        //Index
@@ -154,6 +157,7 @@ model.addRow(new Object[]{index.get(counter), valid_bit.get(counter),tag.get(cou
         jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
         ProgressBar = new javax.swing.JProgressBar();
+        instrbttn = new javax.swing.JButton();
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         jLabel6.setText("Memory Hierarchy ");
@@ -319,6 +323,14 @@ model.addRow(new Object[]{index.get(counter), valid_bit.get(counter),tag.get(cou
             }
         });
 
+        instrbttn.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        instrbttn.setText("Run Instruction File");
+        instrbttn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                instrbttnActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -335,7 +347,9 @@ model.addRow(new Object[]{index.get(counter), valid_bit.get(counter),tag.get(cou
                         .addComponent(jLabel7)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(Bi_addr, javax.swing.GroupLayout.PREFERRED_SIZE, 292, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(instrbttn)
+                        .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 791, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -399,13 +413,19 @@ model.addRow(new Object[]{index.get(counter), valid_bit.get(counter),tag.get(cou
                     .addGroup(layout.createSequentialGroup()
                         .addGap(18, 18, 18)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(34, 34, 34)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
-                    .addComponent(HitMiss1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel7)
-                    .addComponent(Bi_addr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(31, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(34, 34, 34)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel5)
+                            .addComponent(HitMiss1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel7)
+                            .addComponent(Bi_addr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(31, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(instrbttn)
+                        .addContainerGap())))
         );
 
         pack();
@@ -422,6 +442,10 @@ model.addRow(new Object[]{index.get(counter), valid_bit.get(counter),tag.get(cou
             Miss_Ratio1.setText(Double.toString(miss_count/access_seq_bin.size()));
             Accesses.setText(Integer.toString(access_seq_bin.size()));
             AMAT.setText(Double.toString(Cycles + (150*miss_count/access_seq_bin.size())));
+            if(instances_Counter != 2){
+            instrbttn.setVisible(true);
+            }
+            
          
         }
         else{
@@ -469,6 +493,19 @@ model.addRow(new Object[]{index.get(counter), valid_bit.get(counter),tag.get(cou
         this.dispose();        
     }//GEN-LAST:event_jButton2ActionPerformed
 
+    private void instrbttnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_instrbttnActionPerformed
+        // TODO add your handling code here:
+        
+        Simulator s = new Simulator(CacheSize_rst,CacheLineSize_rst,Cycles_rst,Index.instr_str);
+        s.setVisible(true);
+        Simulator.instances_Counter++;
+        this.dispose();
+        
+        
+        
+        
+    }//GEN-LAST:event_instrbttnActionPerformed
+
 
 
     /**
@@ -515,6 +552,7 @@ model.addRow(new Object[]{index.get(counter), valid_bit.get(counter),tag.get(cou
     private javax.swing.JTextField Miss_Ratio1;
     private javax.swing.JToggleButton Next;
     private javax.swing.JProgressBar ProgressBar;
+    private javax.swing.JButton instrbttn;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
