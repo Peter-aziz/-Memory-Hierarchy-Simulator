@@ -40,6 +40,14 @@ model.addRow(new Object[]{index.get(counter), valid_bit.get(counter),tag.get(cou
     // Restart Varibels 
     int CacheSize_rst, CacheLineSize_rst, Cycles_rst;
     ArrayList<String> access_seq_str_rst;
+
+    // Writing policies
+    private String writeHitPolicy; // e.g., "write-through" or "write-back"
+    private String writeMissPolicy; // e.g., "write-allocate" or "no-write-allocate"
+
+    // Read/Write access information
+    private ArrayList<String> accessTypes; // e.g., "read" or "write"
+    private ArrayList<Character> dirty_bit;
    
     //Constructer for GUI
     public Simulator(int cachesize, int cachelinesize, int Cyc, ArrayList<String> sequence) {
@@ -116,6 +124,19 @@ model.addRow(new Object[]{index.get(counter), valid_bit.get(counter),tag.get(cou
         }
         PopulateTableini();
         ProgressBar.setMaximum(access_seq_bin.size());
+
+        // Initialize writing policies
+        this.writeHitPolicy = writeHitPolicy;
+        this.writeMissPolicy = writeMissPolicy;
+
+        // Initialize read/write access information
+        this.accessTypes = accessTypes;
+
+        // Initialize the dirty bit list
+        dirty_bit = new ArrayList<>(no_of_lines);
+        for (int i = 0; i < no_of_lines; i++) {
+            dirty_bit.add('N'); // 'N' for clean
+    }
 
     }
      public Simulator() {
@@ -448,35 +469,103 @@ model.addRow(new Object[]{index.get(counter), valid_bit.get(counter),tag.get(cou
             
          
         }
-        else{
-        String cache_block = access_seq_bin.get(counter).substring((int)tag_size);
-        Bi_addr.setText( access_seq_bin.get(counter));
-        String current_tag = access_seq_bin.get(counter).substring(0,(int)tag_size);
-      //  System.out.println("cache_block  " + cache_block + "\n");
-      //  System.out.println("current_tag  " + current_tag + "\n");
-
-        for (int j = 0 ; j < index.size(); j++){
-            if ((cache_block.equals(index.get(j))) && (tag.get(j).equals(current_tag))){
-                hit_count++;
-                HitMiss1.setText("HIT");
-                HitMiss1.setForeground(Color.green);
+        else {
+            String cache_block = access_seq_bin.get(counter).substring((int) tag_size);
+            Bi_addr.setText(access_seq_bin.get(counter));
+            String current_tag = access_seq_bin.get(counter).substring(0, (int) tag_size);
+            String accessType = accessTypes.get(counter); // Get the access type (read or write)
+    
+            boolean hit = false;
+            for (int j = 0; j < index.size(); j++) {
+                if (cache_block.equals(index.get(j))) {
+                    if (tag.get(j).equals(current_tag)) {
+                        // Hit
+                        hit_count++;
+                        HitMiss1.setText("HIT");
+                        HitMiss1.setForeground(Color.green);
+                        hit = true;
+    
+                        // Handle write hit based on the writing policy
+                        if (accessType.equalsIgnoreCase("write")) {
+                            if (writeHitPolicy.equalsIgnoreCase("write-through")) {
+                                // Write-through policy: Update cache and main memory
+                                tag.set(j, current_tag);
+                                valid_bit.set(j, 'Y');
+                                // Update other relevant statistics if necessary
+                            } else if (writeHitPolicy.equalsIgnoreCase("write-back")) {
+                                // Write-back policy: Update cache only, set the dirty bit
+                                tag.set(j, current_tag);
+                                valid_bit.set(j, 'Y');
+                                dirty_bit.set(j, 'D'); // Assuming 'D' indicates a dirty block
+                                // Update other relevant statistics if necessary
+                            }
+                        }
+                        break;
+                    } else {
+                        // Miss but the block is found with a different tag
+                        HitMiss1.setText("MISS");
+                        HitMiss1.setForeground(Color.red);
+                        miss_count++;
+    
+                        // Handle write miss based on the writing policy
+                        if (accessType.equalsIgnoreCase("write")) {
+                            if (writeMissPolicy.equalsIgnoreCase("write-allocate")) {
+                                // Write-allocate policy: Allocate a new cache block and write to it
+                                valid_bit.set(j, 'Y');
+                                tag.set(j, current_tag);
+                                dirty_bit.set(j, 'D'); // Assuming write-allocate marks the block as dirty
+                            } else if (writeMissPolicy.equalsIgnoreCase("no-write-allocate")) {
+                                // No-write-allocate policy: Write directly to main memory without allocating a cache block
+                                // Only update statistics related to memory writes if necessary
+                            }
+                        }
+    
+                        PopulateTableini();
+                        break;
+                    }
+                }
             }
-            else if (cache_block.equals(index.get(j)) && (!tag.get(j).equals(current_tag))){
-                model.setRowCount(0);
+    
+            if (!hit) {
+                // If no hit was found in the entire cache, it's a miss
                 HitMiss1.setText("MISS");
                 HitMiss1.setForeground(Color.red);
                 miss_count++;
-                valid_bit.set(j, 'Y');
-                tag.set(j,current_tag);
-                PopulateTableini();
-
+    
+                // If it's a read miss or write miss with write-allocate, we need to allocate a new cache block
+                if (accessType.equalsIgnoreCase("read") || 
+                    (accessType.equalsIgnoreCase("write") && writeMissPolicy.equalsIgnoreCase("write-allocate"))) {
+                    // Find an empty spot or use a replacement policy (e.g., LRU) if necessary
+                    boolean allocated = false;
+                    for (int j = 0; j < index.size(); j++) {
+                        if (valid_bit.get(j) == 'N') {
+                            index.set(j, cache_block);
+                            tag.set(j, current_tag);
+                            valid_bit.set(j, 'Y');
+                            if (accessType.equalsIgnoreCase("write")) {
+                                dirty_bit.set(j, 'D');
+                            }
+                            allocated = true;
+                            break;
+                        }
+                    }
+                    if (!allocated) {
+                        // Handle the replacement logic if no empty spot is found
+                        // For simplicity, let's assume the first block is replaced (FIFO)
+                        index.set(0, cache_block);
+                        tag.set(0, current_tag);
+                        valid_bit.set(0, 'Y');
+                        if (accessType.equalsIgnoreCase("write")) {
+                            dirty_bit.set(0, 'D');
+                        }
+                    }
+                    PopulateTableini();
+                }
             }
-
+    
+            counter++;
+            ProgressBar.setValue(counter);
         }
-        
-        counter++;
-        ProgressBar.setValue(counter);
-        } 
     }//GEN-LAST:event_NextActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
